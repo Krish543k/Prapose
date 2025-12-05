@@ -1,0 +1,132 @@
+<!doctype html>
+<html lang="hi">
+<head>
+  <meta charset="utf-8" />
+  <meta name="viewport" content="width=device-width,initial-scale=1" />
+  <title>I Love You Jaana</title>
+  <style>
+    :root{--bg:#0f1724;--card:#0b1220;--accent:#ff5370;--accent2:#ff9ab0}
+    html,body{height:100%;margin:0;font-family:system-ui,-apple-system,'Segoe UI',Roboto,'Noto Sans',sans-serif;background:linear-gradient(180deg,#071025 0%, #0b1220 100%);color:#fff}
+    .wrap{min-height:100vh;display:grid;place-items:center;padding:24px}
+    .card{background:linear-gradient(180deg, rgba(255,255,255,0.03), rgba(255,255,255,0.02));border-radius:20px;padding:28px 32px;text-align:center;box-shadow:0 10px 30px rgba(2,6,23,0.6);max-width:520px;width:100%}
+    h1{font-size:28px;margin:0 0 10px;letter-spacing:0.6px}
+    p.lead{margin:0 0 20px;opacity:0.9}
+    .link-btn{display:inline-block;padding:12px 18px;border-radius:999px;background:linear-gradient(90deg,var(--accent),var(--accent2));color:white;text-decoration:none;font-weight:600;box-shadow:0 6px 18px rgba(255,83,112,0.18);transform:translateY(0);transition:transform .12s ease}
+    .link-btn:active{transform:translateY(2px)}
+
+    /* modal */
+    .modal{position:fixed;inset:0;display:none;place-items:center;background:radial-gradient(circle at 50% 30%, rgba(255,82,112,0.16), rgba(2,6,23,0.7));backdrop-filter: blur(6px);z-index:50}
+    .modal.show{display:grid}
+    .stage{position:relative;width:min(780px,95%);height:min(520px,92%);background:linear-gradient(180deg, rgba(255,255,255,0.02), rgba(255,255,255,0.01));border-radius:18px;padding:28px;display:flex;flex-direction:column;align-items:center;justify-content:center;overflow:hidden}
+    .close{position:absolute;right:12px;top:12px;background:transparent;border:none;color:#fff;font-size:20px;padding:10px;border-radius:10px;cursor:pointer}
+
+    /* heart */
+    .heart-wrap{display:flex;flex-direction:column;align-items:center;gap:14px}
+    .big-heart{width:160px;height:160px;display:grid;place-items:center}
+    .heart-svg{width:100%;height:100%;filter:drop-shadow(0 6px 18px rgba(255,83,112,0.35));animation:pop 1100ms cubic-bezier(.22,1,.36,1) infinite}
+    @keyframes pop{0%{transform:scale(.9)}50%{transform:scale(1.06)}100%{transform:scale(.98)}}
+    .msg{font-size:22px;font-weight:700;text-align:center}
+    .sub{font-size:14px;opacity:.9;margin-top:-6px}
+
+    /* floating tiny hearts */
+    .confetti{position:absolute;inset:0;pointer-events:none}
+    .confetti i{position:absolute;display:block;width:14px;height:14px;transform-origin:center;opacity:0;animation:floatUp 2800ms linear infinite}
+    @keyframes floatUp{
+      0%{transform:translateY(40px) scale(.6) rotate(0);opacity:0}
+      10%{opacity:1}
+      100%{transform:translateY(-720px) scale(1.05) rotate(360deg);opacity:0}
+    }
+
+    /* responsive */
+    @media (max-width:560px){h1{font-size:20px}.big-heart{width:120px;height:120px}}
+  </style>
+</head>
+<body>
+  <div class="wrap">
+    <div class="card">
+      <h1>i love you jaana मेरी सहजादी</h1>
+      <p class="lead">नीचे दिए लिंक पर टैप/क्लिक करें — एक प्यारा सा एनीमेशन खुलेगा।</p>
+      <a id="openLink" class="link-btn" href="#">यहाँ टैप करें →</a>
+    </div>
+  </div>
+
+  <!-- modal / animation -->
+  <div id="modal" class="modal" role="dialog" aria-hidden="true">
+    <div class="stage" role="document">
+      <button class="close" id="closeBtn" aria-label="close">✕</button>
+
+      <div class="heart-wrap" aria-live="polite">
+        <div class="big-heart" aria-hidden="true">
+          <!-- SVG heart -->
+          <svg class="heart-svg" viewBox="0 0 32 29" xmlns="http://www.w3.org/2000/svg" aria-hidden="true">
+            <path fill="url(#g)" d="M23.6 0c-2.9 0-4.8 1.4-6 3.2C16.2 1.4 14.3 0 11.4 0 5.6 0 1.1 4.8 1.1 10.6c0 9 14.9 18.4 15 18.4.1 0 15-9.4 15-18.4C30.9 4.8 26.4 0 20.6 0z"/>
+            <defs>
+              <linearGradient id="g" x1="0" x2="1">
+                <stop offset="0%" stop-color="#ff6b88" />
+                <stop offset="100%" stop-color="#ff2d6f" />
+              </linearGradient>
+            </defs>
+          </svg>
+        </div>
+        <div class="msg">i love you <span style="color:var(--accent);">jaana</span></div>
+        <div class="sub">तुम मेरी सहजादी हो ✨</div>
+      </div>
+
+      <div class="confetti" id="confetti"></div>
+    </div>
+  </div>
+
+  <script>
+    const openLink = document.getElementById('openLink');
+    const modal = document.getElementById('modal');
+    const closeBtn = document.getElementById('closeBtn');
+    let confettiTimer;
+
+    openLink.addEventListener('click', (e)=>{
+      e.preventDefault();
+      showModal();
+    });
+    closeBtn.addEventListener('click', hideModal);
+    modal.addEventListener('click', (e)=>{ if(e.target === modal) hideModal(); });
+    document.addEventListener('keydown', (e)=>{ if(e.key === 'Escape') hideModal(); });
+
+    function showModal(){
+      modal.classList.add('show');
+      modal.setAttribute('aria-hidden','false');
+      startConfetti();
+    }
+    function hideModal(){
+      modal.classList.remove('show');
+      modal.setAttribute('aria-hidden','true');
+      stopConfetti();
+    }
+
+    function startConfetti(){
+      const container = document.getElementById('confetti');
+      container.innerHTML = '';
+      const colors = ['#ff6b88','#ff2d6f','#ff9ab0','#ffd1e0'];
+      // create many tiny hearts with random positions
+      for(let i=0;i<28;i++){
+        const el = document.createElement('i');
+        const size = 8 + Math.floor(Math.random()*18);
+        el.style.width = size+'px';
+        el.style.height = size+'px';
+        el.style.left = Math.random()*100 + '%';
+        el.style.top = (60 + Math.random()*30) + '%';
+        el.style.backgroundImage = `radial-gradient(circle at 30% 30%, white 0%, transparent 30%), linear-gradient(45deg, ${colors[i%colors.length]} 0%, ${colors[(i+1)%colors.length]} 100%)`;
+        el.style.borderRadius = '3px';
+        el.style.transform = `rotate(${Math.random()*360}deg)`;
+        el.style.animationDelay = Math.random()*800 + 'ms';
+        el.style.opacity = 0;
+        container.appendChild(el);
+      }
+      // restart CSS animations by forcing reflow
+      void container.offsetWidth;
+    }
+    function stopConfetti(){
+      const container = document.getElementById('confetti');
+      container.innerHTML = '';
+    }
+  </script>
+</body>
+</html>
